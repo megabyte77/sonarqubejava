@@ -1,20 +1,42 @@
-name: Devops SonarQube Analysis
- 
+name: DevOps SonarQube & Docker Push
+
 on:
   push:
     branches:
       - main
- 
+
 jobs:
   sonar:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
- 
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Run SonarScanner
         run: |
-            mvn clean verify sonar:sonar \
-            -Dsonar.projectKey=sonarqube-java \
-            -Dsonar.host.url=http://13.232.4.242:9094 \
-            -Dsonar.login=sqp_d1b0751b50d3e084fe59f5d63f0644e29a28b6e3
+          mvn clean verify sonar:sonar \
+          -Dsonar.projectKey=sonarqube-java \
+          -Dsonar.host.url=http://13.232.4.242:9094 \
+          -Dsonar.login=sqp_d1b0751b50d3e084fe59f5d63f0644e29a28b6e3
+
+  docker:
+    needs: sonar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t luther443/sonarqubejava:v1 .
+
+      - name: Push Docker Image to Docker Hub
+        run: docker push luther443/sonarqubejava:v1
