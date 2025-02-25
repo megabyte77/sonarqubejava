@@ -1,0 +1,20 @@
+name: Devops SonarQube Analysis
+ 
+on:
+  push:
+    branches:
+      - main
+ 
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+ 
+      - name: Run SonarScanner
+        run: |
+            mvn clean verify sonar:sonar \
+            -Dsonar.projectKey=sonarqube-java \
+            -Dsonar.host.url=http://13.232.4.242:9094 \
+            -Dsonar.login=sqp_d1b0751b50d3e084fe59f5d63f0644e29a28b6e3
